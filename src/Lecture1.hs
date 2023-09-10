@@ -103,10 +103,11 @@ minmax x y z =
 -- first character) and negative end position should result in an empty
 -- string.
 subString :: Int -> Int -> String -> String
-subString start end str =
-  let s = max start 0
-      e = max end 0
-   in drop s $ take (e + 1) str
+subString start end str
+    | end < 0 = ""
+    | otherwise =
+        let s = max start 0
+        in drop s $ take (end + 1) str
 
 -- | Write a function that takes a String — space separated numbers,
 -- and finds a sum of the numbers inside this string.
