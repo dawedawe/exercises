@@ -1,108 +1,109 @@
-{- |
-Module                  : Lecture4
-Copyright               : (c) 2021-2022 Haskell Beginners 2022 Course
-SPDX-License-Identifier : MPL-2.0
-Maintainer              : Haskell Beginners 2022 Course <haskell.beginners2022@gmail.com>
-Stability               : Stable
-Portability             : Portable
-
-Exercises for the Lecture 4 of the Haskell Beginners course.
-
-In this task you're going to implement a complete Haskell Program!
-
-The purpose of the program is to read information about various
-product trades from a file, calculate some stats about buys and sells
-and pretty-print them in the terminal.
-
-The content of the file looks like this:
-
-
-Name,Type,Amount
-Apples,Sell,25
-Tomatoes,Sell,10
-Pineapples,Buy,50
-
-
-Specifically:
-
-  1. The first line contains names of columns.
-  2. Each line contains exactly 3 comma-separated values.
-  3. The first value is a name of a product: a non-empty string
-     containing any characters except comma.
-  4. Second value is the type of trade. It's either a "Buy" or "Sell" string.
-  5. The last, third value, is a non-negative integer number: the cost
-     of the product.
-  6. Each value might be surrounded by any amount of spaces.
-  7. You don't need to trim spaces in the product name. But you need
-     to parse the other two values even if they contain leading and
-     trailing spaces.
-
-Your program takes a path to a file and it should output several stats
-about all the trades. The list of parameters to output is always the
-same. Only values can change depending on file content.
-
-For example, for the file content above, the program should print the following:
-
-
-Total positions        : 3
-Total final balance    : -15
-Biggest absolute cost  : 50
-Smallest absolute cost : 10
-Max earning            : 25
-Min earning            : 10
-Max spending           : 50
-Min spending           : 50
-Longest product name   : Pineapples
-
-
-To run the program, use the following command for specifying the
-path (the repository already contains a small test file):
-
-
-cabal run lecture4 -- test/products.csv
-
-
-You can assume that the file exists so you don't need to handle such
-exceptional situations. But you get bonus points for doing so :)
-
-However, the file might contain data in an invalid format.
-All possible content errors:
-
-  * There might not be the first line with column names
-  * Names of columns might be different
-  * Each line can have less than 3 or more than 3 values
-  * The product name string can be empty
-  * The second value might be different from "Buy" or "Sell"
-  * The number can be negative or not integer or not even a number
-
-In this task, for simplicity reasons, you don't need to report any
-errors. You can just ignore invalid rows.
-
-Exercises for Lecture 4 also contain tests and you can run them as usual.
--}
-
+-- |
+-- Module                  : Lecture4
+-- Copyright               : (c) 2021-2022 Haskell Beginners 2022 Course
+-- SPDX-License-Identifier : MPL-2.0
+-- Maintainer              : Haskell Beginners 2022 Course <haskell.beginners2022@gmail.com>
+-- Stability               : Stable
+-- Portability             : Portable
+--
+-- Exercises for the Lecture 4 of the Haskell Beginners course.
+--
+-- In this task you're going to implement a complete Haskell Program!
+--
+-- The purpose of the program is to read information about various
+-- product trades from a file, calculate some stats about buys and sells
+-- and pretty-print them in the terminal.
+--
+-- The content of the file looks like this:
+--
+--
+-- Name,Type,Amount
+-- Apples,Sell,25
+-- Tomatoes,Sell,10
+-- Pineapples,Buy,50
+--
+--
+-- Specifically:
+--
+--   1. The first line contains names of columns.
+--   2. Each line contains exactly 3 comma-separated values.
+--   3. The first value is a name of a product: a non-empty string
+--      containing any characters except comma.
+--   4. Second value is the type of trade. It's either a "Buy" or "Sell" string.
+--   5. The last, third value, is a non-negative integer number: the cost
+--      of the product.
+--   6. Each value might be surrounded by any amount of spaces.
+--   7. You don't need to trim spaces in the product name. But you need
+--      to parse the other two values even if they contain leading and
+--      trailing spaces.
+--
+-- Your program takes a path to a file and it should output several stats
+-- about all the trades. The list of parameters to output is always the
+-- same. Only values can change depending on file content.
+--
+-- For example, for the file content above, the program should print the following:
+--
+--
+-- Total positions        : 3
+-- Total final balance    : -15
+-- Biggest absolute cost  : 50
+-- Smallest absolute cost : 10
+-- Max earning            : 25
+-- Min earning            : 10
+-- Max spending           : 50
+-- Min spending           : 50
+-- Longest product name   : Pineapples
+--
+--
+-- To run the program, use the following command for specifying the
+-- path (the repository already contains a small test file):
+--
+--
+-- cabal run lecture4 -- test/products.csv
+--
+--
+-- You can assume that the file exists so you don't need to handle such
+-- exceptional situations. But you get bonus points for doing so :)
+--
+-- However, the file might contain data in an invalid format.
+-- All possible content errors:
+--
+--   * There might not be the first line with column names
+--   * Names of columns might be different
+--   * Each line can have less than 3 or more than 3 values
+--   * The product name string can be empty
+--   * The second value might be different from "Buy" or "Sell"
+--   * The number can be negative or not integer or not even a number
+--
+-- In this task, for simplicity reasons, you don't need to report any
+-- errors. You can just ignore invalid rows.
+--
+-- Exercises for Lecture 4 also contain tests and you can run them as usual.
 module Lecture4
-    ( -- * Main running function
-      main
+  ( -- * Main running function
+    main,
 
-      -- * Types
-    , TradeType (..)
-    , Row (..)
-    , MaxLen (..)
-    , Stats (..)
+    -- * Types
+    TradeType (..),
+    Row (..),
+    MaxLen (..),
+    Stats (..),
 
-      -- * Internal functions
-    , parseRow
-    , rowToStats
-    , combineRows
-    , displayStats
-    , calculateStats
-    , printProductStats
-    ) where
+    -- * Internal functions
+    parseRow,
+    rowToStats,
+    combineRows,
+    displayStats,
+    calculateStats,
+    printProductStats,
+  )
+where
 
 import Data.List.NonEmpty (NonEmpty (..))
-import Data.Semigroup (Max (..), Min (..), Semigroup (..), Sum (..))
+import Data.Maybe (mapMaybe)
+import Data.Semigroup (Max (..), Min (..), Sum (..))
 import Text.Read (readMaybe)
+import System.Environment (getArgs)
 
 {- In this exercise, instead of writing the entire program from
 scratch, you're offered to complete the missing parts.
@@ -114,15 +115,16 @@ First, let's define data types to represent a single row of our file.
 -}
 
 data TradeType
-    = Buy
-    | Sell
-    deriving (Show, Eq, Read)
+  = Buy
+  | Sell
+  deriving (Show, Eq, Read)
 
 data Row = Row
-    { rowProduct   :: String
-    , rowTradeType :: TradeType
-    , rowCost      :: Int
-    } deriving (Show, Eq)
+  { rowProduct :: String,
+    rowTradeType :: TradeType,
+    rowCost :: Int
+  }
+  deriving (Show, Eq)
 
 {-
 Now you can implement a function that takes a String containing a single row and
@@ -134,8 +136,35 @@ errors. We will simply return an optional result here.
 🕯 HINT: Use the 'readMaybe' function from the 'Text.Read' module.
 -}
 
+splitBy :: Char -> String -> [String]
+splitBy _ [] = []
+splitBy c s =
+  let nextWord = takeWhile (/= c) s
+      after = drop (length nextWord) s
+      after' = dropWhile (== c) after
+   in nextWord : splitBy c after'
+
+isValidRow :: Row -> Maybe Row
+isValidRow row =
+  if rowProduct row /= ""
+    && rowCost row >= 0
+    then Just row
+    else Nothing
+
 parseRow :: String -> Maybe Row
-parseRow = error "TODO"
+parseRow row =
+  let parts = splitBy ',' row
+   in if length parts == 3
+        then
+          let prod = head parts
+              tradeType :: Maybe TradeType = readMaybe $ parts !! 1
+              cost :: Maybe Int = readMaybe $ parts !! 2
+           in case (prod, tradeType, cost) of
+                (p, Just t, Just c) ->
+                  Just Row {rowProduct = p, rowTradeType = t, rowCost = c}
+                    >>= isValidRow
+                _ -> Nothing
+        else Nothing
 
 {-
 We have almost all we need to calculate final stats in a simple and
@@ -146,8 +175,9 @@ custom data type for finding the longest product name.
 -}
 
 newtype MaxLen = MaxLen
-    { unMaxLen :: String
-    } deriving (Show, Eq)
+  { unMaxLen :: String
+  }
+  deriving (Show, Eq)
 
 {-
 We can implement the 'Semigroup' instance for this data type that will
@@ -157,7 +187,7 @@ string.
 If both strings have the same length, return the first one.
 -}
 instance Semigroup MaxLen where
-
+  a <> b = if length (unMaxLen a) >= length (unMaxLen b) then a else b
 
 {-
 It's convenient to represent our stats as a data type that has
@@ -166,16 +196,17 @@ lines.
 -}
 
 data Stats = Stats
-    { statsTotalPositions :: Sum Int
-    , statsTotalSum       :: Sum Int
-    , statsAbsoluteMax    :: Max Int
-    , statsAbsoluteMin    :: Min Int
-    , statsSellMax        :: Maybe (Max Int)
-    , statsSellMin        :: Maybe (Min Int)
-    , statsBuyMax         :: Maybe (Max Int)
-    , statsBuyMin         :: Maybe (Min Int)
-    , statsLongest        :: MaxLen
-    } deriving (Show, Eq)
+  { statsTotalPositions :: Sum Int,
+    statsTotalSum :: Sum Int,
+    statsAbsoluteMax :: Max Int,
+    statsAbsoluteMin :: Min Int,
+    statsSellMax :: Maybe (Max Int),
+    statsSellMin :: Maybe (Min Int),
+    statsBuyMax :: Maybe (Max Int),
+    statsBuyMin :: Maybe (Min Int),
+    statsLongest :: MaxLen
+  }
+  deriving (Show, Eq)
 
 {-
 The 'Stats' data type has multiple fields. All these fields have
@@ -184,7 +215,18 @@ instance for the 'Stats' type itself.
 -}
 
 instance Semigroup Stats where
-
+  a <> b =
+    Stats
+      { statsTotalPositions = statsTotalPositions a <> statsTotalPositions b,
+        statsTotalSum = statsTotalSum a <> statsTotalSum b,
+        statsAbsoluteMax = statsAbsoluteMax a <> statsAbsoluteMax b,
+        statsAbsoluteMin = statsAbsoluteMin a <> statsAbsoluteMin b,
+        statsSellMax = statsSellMax a <> statsSellMax b,
+        statsSellMin = statsSellMin a <> statsSellMin b,
+        statsBuyMax = statsBuyMax a <> statsBuyMax b,
+        statsBuyMin = statsBuyMin a <> statsBuyMin b,
+        statsLongest = statsLongest a <> statsLongest b
+      }
 
 {-
 The reason for having the 'Stats' data type is to be able to convert
@@ -200,7 +242,18 @@ row in the file.
 -}
 
 rowToStats :: Row -> Stats
-rowToStats = error "TODO"
+rowToStats a =
+  Stats
+    { statsTotalPositions = 1,
+      statsTotalSum = Sum $ if rowTradeType a == Buy then (-rowCost a) else rowCost a,
+      statsAbsoluteMax = Max $ rowCost a,
+      statsAbsoluteMin = Min $ rowCost a,
+      statsSellMax = if rowTradeType a == Sell then Just $ Max $ rowCost a else Nothing,
+      statsSellMin = if rowTradeType a == Sell then Just $ Min $ rowCost a else Nothing,
+      statsBuyMax = if rowTradeType a == Buy then Just $ Max $ rowCost a else Nothing,
+      statsBuyMin = if rowTradeType a == Buy then Just $ Min $ rowCost a else Nothing,
+      statsLongest = MaxLen $ rowProduct a
+    }
 
 {-
 Now, after we learned to convert a single row, we can convert a list of rows!
@@ -226,7 +279,8 @@ implement the next task.
 -}
 
 combineRows :: NonEmpty Row -> Stats
-combineRows = error "TODO"
+combineRows (x :| []) = rowToStats x
+combineRows (x :| xs) = foldr ((<>) . rowToStats) (rowToStats x) xs
 
 {-
 After we've calculated stats for all rows, we can then pretty-print
@@ -237,7 +291,25 @@ you can return string "no value".
 -}
 
 displayStats :: Stats -> String
-displayStats = error "TODO"
+displayStats s =
+  "Total positions        : "
+    ++ (show . getSum . statsTotalPositions) s
+    ++ "\nTotal final balance    : "
+    ++ (show . getSum . statsTotalSum) s
+    ++ "\nBiggest absolute cost  : "
+    ++ (show . getMax . statsAbsoluteMax) s
+    ++ "\nSmallest absolute cost : "
+    ++ (show . getMin . statsAbsoluteMin) s
+    ++ "\nMax earning            : "
+    ++ maybe "no value" (show . getMax) (statsSellMax s)
+    ++ "\nMin earning            : "
+    ++ maybe "no value" (show . getMin) (statsSellMin s)
+    ++ "\nMax spending           : "
+    ++ maybe "no value" (show . getMax) (statsBuyMax s)
+    ++ "\nMin spending           : "
+    ++ maybe "no value" (show . getMin) (statsBuyMin s)
+    ++ "\nLongest product name   : "
+    ++ (unMaxLen . statsLongest) s
 
 {-
 Now, we definitely have all the pieces in places! We can write a
@@ -257,7 +329,12 @@ the file doesn't have any products.
 -}
 
 calculateStats :: String -> String
-calculateStats = error "TODO"
+calculateStats content =
+  let ls = splitBy '\n' content
+      rows = mapMaybe parseRow ls
+   in case rows of
+        [] -> "no products"
+        (r : rs) -> displayStats $ combineRows (r :| rs)
 
 {- The only thing left is to write a function with side-effects that
 takes a path to a file, reads its content, calculates stats and prints
@@ -267,7 +344,11 @@ Use functions 'readFile' and 'putStrLn' here.
 -}
 
 printProductStats :: FilePath -> IO ()
-printProductStats = error "TODO"
+printProductStats filePath =
+  do
+    contents <- readFile filePath
+    let stats = calculateStats contents
+    putStrLn stats
 
 {-
 Okay, I lied. This is not the last thing. Now, we need to wrap
@@ -283,7 +364,12 @@ https://hackage.haskell.org/package/base-4.16.0.0/docs/System-Environment.html#v
 -}
 
 main :: IO ()
-main = error "TODO"
+main =
+  do
+    args <- getArgs
+    case args of
+      [path] -> printProductStats path
+      _ -> putStrLn "no path given"
 
 
 {-
@@ -303,9 +389,7 @@ and streaming. The course contains an additional executable
 
 To run the executable that produces a huge file, use the following command:
 
-
 cabal run generate-many-products
-
 
 Laziness in Haskell is a double-edged sword. On one hand, it leads to
 more composable code and automatic streaming in most cases. On the
@@ -351,7 +435,6 @@ solution, consider doing the following improvements:
        ensure that values inside 'Just' are fully-evaluated on each
        step.
 
-
 You can check memory usage of your program by running `htop` in a
 separate terminal window. If you see that the memory usage doesn't
 grow indefinitely by eating all your RAM, it means that the solution
@@ -360,9 +443,7 @@ requires constant-size memory.
 Additionally, on Linux, you can run the following command to see the
 actual size of required memory during your program execution:
 
-
 /usr/bin/time -v cabal run lecture4 -- test/gen/big.csv
-
 
 You can expect the optimal lazy solution to run in ~20 minutes and
 consume ~200 MB of RAM. The numbers are not the best and there's lots
